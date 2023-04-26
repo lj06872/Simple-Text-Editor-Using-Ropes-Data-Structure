@@ -2,11 +2,6 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter import filedialog
-from Ropes import *
-
-# Initiating Rope
-MyRope = Rope("")
-i = 0
 
 # Defining TextEditor Class
 class TextEditor:
@@ -16,9 +11,11 @@ class TextEditor:
     # Assigning root
     self.root = root
     # Title of the window
-    self.root.title("Text Weavers")
-    # Sets the state of the window to fullscreen
-    self.root.state("zoomed")
+    self.root.title("RopePad")
+
+    self.root.resizable(0,0)
+    # Window Geometry
+    self.root.geometry("800x800")
     # Initializing filename
     self.filename = None
     # Declaring Title variable
@@ -26,20 +23,19 @@ class TextEditor:
     # Declaring Status variable
     self.status = StringVar()
 
-
     # Creating Titlebar
-    self.titlebar = Label(self.root,textvariable=self.title,font=("Sans",12,"normal"),bd=1,relief=GROOVE)
+    self.titlebar = Label(self.root,textvariable=self.title,font=("times new roman",15,"bold"),bd=2,relief=GROOVE)
     # Packing Titlebar to root window
     self.titlebar.pack(side=TOP,fill=BOTH)
     # Calling Settitle Function
     self.settitle()
 
     # Creating Statusbar
-    self.statusbar = Label(self.root,textvariable=self.status,font=("Arial",15,"bold"),bd=2,relief=GROOVE)
+    self.statusbar = Label(self.root,textvariable=self.status,font=("times new roman",15,"bold"),bd=2,relief=GROOVE)
     # Packing status bar to root window
     self.statusbar.pack(side=BOTTOM,fill=BOTH)
     # Initializing Status
-    self.status.set("Created with ")
+    self.status.set("Welcome To RopePad!")
 
     # Creating Menubar
     self.menubar = Menu(self.root,font=("times new roman",15,"bold"),activebackground="skyblue")
@@ -65,8 +61,8 @@ class TextEditor:
 
     # Creating Edit Menu
     self.editmenu = Menu(self.menubar,font=("times new roman",12,"bold"),activebackground="skyblue",tearoff=0)
-    # Adding Cut text Command
-    self.editmenu.add_command(label="Cut",accelerator="Ctrl+X",command=self.cut)
+    # # Adding Cut text Command
+    # self.editmenu.add_command(label="Cut",accelerator="Ctrl+X",command=self.cut)
     # Adding Copy text Command
     self.editmenu.add_command(label="Copy",accelerator="Ctrl+C",command=self.copy)
     # Adding Paste text command
@@ -77,6 +73,13 @@ class TextEditor:
     self.editmenu.add_command(label="Undo",accelerator="Ctrl+U",command=self.undo)
     # Cascading editmenu to menubar
     self.menubar.add_cascade(label="Edit", menu=self.editmenu)
+
+    # Creating Help Menu
+    self.helpmenu = Menu(self.menubar,font=("times new roman",12,"bold"),activebackground="skyblue",tearoff=0)
+    # Adding About Command
+    self.helpmenu.add_command(label="About",command=self.infoabout)
+    # Cascading helpmenu to menubar
+    self.menubar.add_cascade(label="Help", menu=self.helpmenu)
 
     # Creating Scrollbar
     scrol_y = Scrollbar(self.root,orient=VERTICAL)
@@ -89,7 +92,7 @@ class TextEditor:
     # Packing Text Area to root window
     self.txtarea.pack(fill=BOTH,expand=1)
 
-    # Calling shortcuts function
+    # Calling shortcuts funtion
     self.shortcuts()
 
   # Defining settitle function
@@ -118,21 +121,16 @@ class TextEditor:
     # Exception handling
     try:
       # Asking for file to open
-      self.filename = filedialog.askopenfilename(title = "Select file",filetypes = (("All Files","*.*"),("Text Files","*.txt"),("Python Files","*.py")))
+      self.filename = filedialog.askopenfilename(title = "Select file",filetypes = (("All Files","*.*"),("Text Files","*.txt")))
       # checking if filename not none
       if self.filename:
         # opening file in readmode
         infile = open(self.filename,"r")
         # Clearing text area
         self.txtarea.delete("1.0",END)
-        # Reinitiating Rope
-        MyRope = Rope("")
-        i = 0
         # Inserting data Line by line into text area
         for line in infile:
           self.txtarea.insert(END,line)
-          MyRope.insert(MyRope.root, line+'\n', i)
-          i+=len(line+'\n')
         # Closing the file  
         infile.close()
         # Calling Set title
@@ -170,9 +168,9 @@ class TextEditor:
     # Exception handling
     try:
       # Asking for file name and type to save
-      untitledfile = filedialog.asksaveasfilename(title = "Save file As",defaultextension=".txt",initialfile = "Untitled.txt",filetypes = (("All Files","*.*"),("Text Files","*.txt"),("Python Files","*.py")))
-      # Reading the data from Rope
-      data = MyRope.root.value
+      untitledfile = filedialog.asksaveasfilename(title = "Save file As",defaultextension=".txt",initialfile = "Untitled.txt",filetypes = (("All Files","*.*"),("Text Files","*.txt")))
+      # Reading the data from text area
+      data = self.txtarea.get("1.0",END)
       # opening File in write mode
       outfile = open(untitledfile,"w")
       # Writing Data into file
@@ -199,25 +197,14 @@ class TextEditor:
   # Defining Cut Funtion
   def cut(self,*args):
     self.txtarea.event_generate("<<Cut>>")
-    try:
-        # get the first and last index of the selected text
-        first_index, last_index = self.txtarea.tag_ranges("sel")
-        MyRope.delete(MyRope.root, first_index, last_index)
-    except:
-        # no text is selected
-        print("No text selected")
 
   # Defining Copy Funtion
   def copy(self,*args):
-    self.txtarea.event_generate("<<Copy>>")
+          self.txtarea.event_generate("<<Copy>>")
 
   # Defining Paste Funtion
   def paste(self,*args):
     self.txtarea.event_generate("<<Paste>>")
-    cursor_position = self.txtarea.index("insert")
-    s = self.txtarea.clipboard_get()
-    # insert into the Rope
-    MyRope.insert(MyRope.root, s, cursor_position)
 
   # Defining Undo Funtion
   def undo(self,*args):
@@ -252,7 +239,7 @@ class TextEditor:
 
   # Defining About Funtion
   def infoabout(self):
-    messagebox.showinfo("About Text Editor","A Simple Text Editor\nCreated using Python\nCreated by Kumail, Essa, Yousuf, Fahad.")
+    messagebox.showinfo("About Text Editor","A Simple Text Editor\nCreated using Python.")
 
   # Defining shortcuts Funtion
   def shortcuts(self):
